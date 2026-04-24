@@ -22,7 +22,10 @@ export async function initJiraClient() {
         console.log('Token decrypted:', decryptedToken ? 'success' : 'FAILED - got null');
 
         if (!decryptedToken) {
-          throw new Error('Failed to decrypt API token. The encryption key may have changed.');
+          console.warn('Failed to decrypt API token. Jira will be unavailable (mock tickets still work).');
+          jiraClient = null;
+          resolve(null);
+          return;
         }
 
         jiraClient = new JiraClient({
@@ -40,8 +43,8 @@ export async function initJiraClient() {
         resolve(user);
       } catch (err) {
         jiraClient = null;
-        console.error('JIRA init error:', err.message);
-        reject(err);
+        console.error('JIRA init error (non-fatal):', err.message);
+        resolve(null); // Resolve gracefully so mock tickets still work
       }
     });
   });
